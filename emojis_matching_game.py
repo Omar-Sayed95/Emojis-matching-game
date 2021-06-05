@@ -94,6 +94,9 @@ def counter():
 # setup the app
 app = App("emoji match", height = 300, width = 900)
 
+player1_name = app.question("Player 1 name", "Enter player 1 name", initial_value="Player 1")
+player2_name = app.question("Player 2 name", "Enter player 1 name", initial_value="Player 2")
+
 result = Text(app)
 
 # create a box to house the grids
@@ -102,7 +105,7 @@ game_box = Box(app)
 ## create a box to house player 1's data
 player1_box = Box (game_box, align = "left", layout = "grid")
 player1_txt = Text (player1_box, text = "Player 1:", grid = [0,0])
-player1_txt_name = Text (player1_box, text = "Name", grid = [1,0])
+player1_txt_name = Text (player1_box, text = player1_name, grid = [1,0])
 player1_score = Text (player1_box, text = "Score", grid = [0,1])
 player1_score_num = Text (player1_box, text = "0", grid = [1,1])
 player1_timer = Text (player1_box, text = "Remaining time: ", grid = [0,2])
@@ -114,7 +117,7 @@ pictures_box = Box(game_box, layout="grid", align = "left")
 ## create a box to house player 2 data
 player2_box = Box (game_box, align = "right", layout = "grid")
 player2_txt = Text (player2_box, text = "Player 2:", grid = [0,0])
-player2_txt_name = Text (player2_box, text = "Name", grid = [1,0])
+player2_txt_name = Text (player2_box, text = player2_name, grid = [1,0])
 player2_score = Text (player2_box, text = "Score", grid = [0,1])
 player2_score_num = Text (player2_box, text = "0", grid = [1,1])
 player2_timer = Text (player2_box, text = "Remaining time: ", grid = [0,2])
