@@ -10,6 +10,22 @@ emojis = [os.path.join(emojis_dir, f) for f in os.listdir(emojis_dir) if os.path
 # shuffle the emojis
 shuffle(emojis)
 
+player = 1
+
+## Add multiple players
+def switch_player():    
+    global player 
+    global score
+    global timer
+    if player == 1:
+        score = player1_score_num
+        timer = player1_timer_num
+        player = 2
+    else:
+        score = player2_score_num
+        timer = player2_timer_num
+        player = 1
+
 def match_emoji(matched):
     if matched:
         result.value = "correct"
@@ -20,62 +36,100 @@ def match_emoji(matched):
         
     setup_round()
 
+
 def setup_round():
-    # for each picture and button in the list assign an emoji to its image feature
-    for picture in pictures:
-        # make the picture a random emoji
-        picture.image = emojis.pop()
+    ##switch between players
+    switch_player()
 
-    for button in buttons:
-        # make the image feature of the PushButton a random emoji
-        button.image = emojis.pop()
-        # set the command to be called and pass False, as these emoji wont be the matching ones
-        button.update_command(match_emoji, [False])
+    if int(timer.value) > 0:
+        # for each picture and button in the list assign an emoji to its image feature
+        for picture in pictures:
+            # make the picture a random emoji
+            picture.image = emojis.pop()
 
-    # choose a new emoji
-    matched_emoji = emojis.pop()
+        for button in buttons:
+            # make the image feature of the PushButton a random emoji
+            button.image = emojis.pop()
+            # set the command to be called and pass False, as these emoji wont be the matching ones
+            button.update_command(match_emoji, [False])
 
-    # select a number at random
-    random_picture = randint(0,8)
-    # change the image feature of the Picture with this index in the list of pictures to the new emoji
-    pictures[random_picture].image = matched_emoji
+        # choose a new emoji
+        matched_emoji = emojis.pop()
 
-    random_button = randint(0,8)
-    # change the image feature of the PushButton with this index in the list of buttons to the new emoji
-    buttons[random_button].image = matched_emoji
-    # set the command to be called and pass True, as this is the matching emoji
-    buttons[random_button].update_command(match_emoji, [True])
+        # select a number at random
+        random_picture = randint(0,8)
+        # change the image feature of the Picture with this index in the list of pictures to the new emoji
+        pictures[random_picture].image = matched_emoji
+
+        random_button = randint(0,8)
+        # change the image feature of the PushButton with this index in the list of buttons to the new emoji
+        buttons[random_button].image = matched_emoji
+        # set the command to be called and pass True, as this is the matching emoji
+        buttons[random_button].update_command(match_emoji, [True])
 
 def counter():
-    timer.value = int(timer.value) - 1
-    if int(timer.value) == 0:
-        timer.cancel(counter)
-        # reset the timer
-        result.value = "Game Over"
-        warn("Time Out", "you've run out of time")
-        # reset timer
-        timer.value = "30"
-        # reset result
-        result.value = ""
-        # reset score
-        score.value = "0"
-        # start new round
+    if int(timer.value) <= 0:
         setup_round()
-        #restart timer
-        timer.repeat(1000, counter)
+        if int(timer.value) <= 0:
+            timer.cancel(counter)
+            # reset the timer
+            result.value = "Game Over"
+            app.info("Time Out", "{} scored {} points \n{} scored {} points"
+                 .format(player1_txt_name.value, player1_score_num.value,
+                         player2_txt_name.value, player2_score_num.value))
+            # reset timer
+            timer.value = "10"
+            # reset result
+            result.value = ""
+            # reset score
+            score.value = "0"
+            # start new round
+            setup_round()
+            #restart timer
+            timer.repeat(1000, counter)
+    else:
+            timer.value = int(timer.value) - 1
 
 
 # setup the app
-app = App("emoji match", height = 550, width = 300)
+app = App("emoji match", height = 300, width = 900)
 
 result = Text(app)
 
 # create a box to house the grids
 game_box = Box(app)
+
+## create a box to house player 1's data
+player1_box = Box (game_box, align = "left", layout = "grid")
+player1_txt = Text (player1_box, text = "Player 1:", grid = [0,0])
+player1_txt_name = Text (player1_box, text = "Name", grid = [1,0])
+player1_score = Text (player1_box, text = "Score", grid = [0,1])
+player1_score_num = Text (player1_box, text = "0", grid = [1,1])
+player1_timer = Text (player1_box, text = "Remaining time: ", grid = [0,2])
+player1_timer_num = Text (player1_box, text = "10", grid = [1,2])
+
 # create a box to house the pictures
-pictures_box = Box(game_box, layout="grid")
+pictures_box = Box(game_box, layout="grid", align = "left")
+
+## create a box to house player 2 data
+player2_box = Box (game_box, align = "right", layout = "grid")
+player2_txt = Text (player2_box, text = "Player 2:", grid = [0,0])
+player2_txt_name = Text (player2_box, text = "Name", grid = [1,0])
+player2_score = Text (player2_box, text = "Score", grid = [0,1])
+player2_score_num = Text (player2_box, text = "0", grid = [1,1])
+player2_timer = Text (player2_box, text = "Remaining time: ", grid = [0,2])
+player2_timer_num = Text (player2_box, text = "10", grid = [1,2])
+                   
 # create a box to house the buttons
-buttons_box = Box(game_box, layout="grid")
+buttons_box = Box(game_box, layout="grid", align = "right")
+
+# add in the extra features
+extra_features = Box(app)
+timer = player1_timer_num
+
+# start the timer
+timer.value = 10
+timer.repeat(1000,counter)
 
 # create the an empty lists to add the buttons and pictures to
 buttons = []
@@ -89,22 +143,14 @@ for x in range(0,3):
         
         button = PushButton(buttons_box, grid=[x,y])
         buttons.append(button)
-
-
-# add in the extra features
-extra_features = Box(app)
-timer = Text(extra_features, text="Get Ready")
-
+    
 
 setup_round()
 
-# start the timer
-timer.value = 30
-timer.repeat(1000,counter)
-
+'''
 scoreboard = Box(app) 
 label = Text(scoreboard, text="Score", align="left") 
 score = Text(scoreboard, text="0", align="left") 
-
+'''
 
 app.display()
